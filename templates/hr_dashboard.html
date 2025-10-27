@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <style>
+    :root {
+      --accent: #16a34a;
+      --bg: #f5f7fa;
+      --card: #fff;
+      --border: #e5e7eb;
+      --muted: #6b7280;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: #111;
+    }
+    header {
+      background: var(--card);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header h2 i {
+      font-size: 20px;
+    }
+    header a {
+      text-decoration: none;
+      color: var(--danger);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: grid;
+      gap: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .card h3 {
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    label {
+      font-weight: 500;
+      font-size: 14px;
+      margin-top: 10px;
+      display: block;
+    }
+    textarea, input, select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      margin-top: 4px;
+      background: #fafafa;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
+      outline: none;
+    }
+    input[type="submit"], button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 14px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+    input[type="submit"]:hover, button:hover {
+      background: #15803d;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #f3f4f6;
+      color: var(--muted);
+    }
+    .selected {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .rejected {
+      color: var(--danger);
+      font-weight: 600;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .flashes {
+      background: #ecfdf5;
+      border-left: 4px solid var(--success);
+      color: var(--success);
+      padding: 10px;
+      list-style: none;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    h4 {
+      margin-bottom: 6px;
+      margin-top: 20px;
+      font-size: 16px;
+      color: var(--muted);
+    }
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .links a {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s ease;
+    }
+    .links a:hover {
+      background: #f3f4f6;
+    }
+    @media (max-width: 900px) {
+      table { font-size: 13px; }
+    }
+  </style>
+</head>
+<body class="bg-ai theme-sunset">
+  <header>
+    <h2><i class="fa-solid fa-user-tie"></i> HR Dashboard</h2>
+    <a href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </header>
+
+  <main>
+    {% with msgs = get_flashed_messages() %}
+    {% if msgs %}
+    <ul class="flashes">
+      {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Post Job -->
+    <div class="card">
+      <h3><i class="fa-solid fa-briefcase"></i> Post a New Job</h3>
+      <form action="/post_job" method="POST">
+        <label>Title</label>
+        <input name="title" required>
+        <label>Description</label>
+        <textarea name="description" required rows="4"></textarea>
+        <label>Requirements (comma-separated)</label>
+        <input name="requirements" required placeholder="python, flask, sql">
+        <label>Salary</label>
+        <input name="salary" required placeholder="₹ 8–12 LPA">
+        <label>Last Date to Apply</label>
+        <input type="date" name="last_date" required>
+        <input type="submit" value="Post Job">
+      </form>
+    </div>
+
+    <!-- Jobs list -->
+    <div class="card">
+      <h3><i class="fa-solid fa-list"></i> Available Jobs</h3>
+      {% if jobs %}
+      <ul>
+        {% for job in jobs %}
+        <li>
+          <strong>{{ job.title }}</strong> — ₹{{ job.salary }} <br>
+          <small style="color: var(--muted)">Last Date: {{ job.last_date }}</small><br>
+          <em>Req:</em> {{ job.requirements }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No jobs posted yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Ranked Results -->
+    {% if parsed %}
+    <div class="card">
+      <h3><i class="fa-solid fa-ranking-star"></i> Ranked Resume Results</h3>
+      <table>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Resume</th>
+          <th>Score (%)</th>
+          <th>Matched Skills</th>
+          <th>Status</th>
+        </tr>
+        {% for result in parsed %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ result.name }}</td>
+          <td><a href="/uploads/resumes/{{ result.filename }}" download>{{ result.filename }}</a></td>
+          <td>{{ result.score }}</td>
+          <td>{{ result.skills | join(', ') }}</td>
+          <td><span class="{{ 'selected' if result.status == 'Selected' else 'rejected' }}">{{ result.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}
+
+    <!-- Applicants grouped by Job -->
+    <div class="card">
+      <h3><i class="fa-solid fa-users"></i> Applicants (Job-wise)</h3>
+      {% if jobs %}
+      {% for job in jobs %}
+      <h4>{{ job.title }}</h4>
+      {% set apps = grouped_applications.get(job.title, []) %}
+      {% if apps %}
+      <table>
+        <tr>
+          <th>#</th>
+          <th>Full Name</th>
+          <th>Mobile</th>
+          <th>Gender</th>
+          <th>Education</th>
+          <th>Address</th>
+          <th>Resume</th>
+        </tr>
+        {% for a in apps %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ a.name }}</td>
+          <td>{{ a.mobile }}</td>
+          <td>{{ a.gender }}</td>
+          <td>{{ a.education }}</td>
+          <td>{{ a.address }}</td>
+          <td><a href="/uploads/resumes/{{ a.resume_file }}" download>Download</a></td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p>No applicants yet for this job.</p>
+      {% endif %}
+      {% endfor %}
+      {% else %}
+      <p>No jobs posted yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card links">
+      <a href="/screening"><i class="fa-solid fa-vial"></i> Open Screening Workspace</a>
+      <a href="/analysis_dashboard"><i class="fa-solid fa-chart-pie"></i> View Analysis Dashboard</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recruitment Analysis • Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --card: #fff;
+      --muted: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      font-family: Inter, system-ui, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+      margin: 0;
+      background: var(--bg);
+      color: #111
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 28px auto;
+      padding: 20px
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center
+    }
+
+    .card {
+      background: var(--card);
+      padding: 14px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(16, 24, 40, .06);
+      border: 1px solid rgba(15, 23, 42, .04)
+    }
+
+    form.select-form select,
+    form.select-form button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #e6e9ef;
+      background: #fff
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px
+    }
+
+    .kpi .num {
+      font-size: 22px;
+      font-weight: 700
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+      align-items: start
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 300px;
+      min-height: 260px
+    }
+
+    .chart-wrap-sm {
+      position: relative;
+      height: 180px
+    }
+
+    canvas {
+      display: block
+    }
+
+    @media (max-width:980px) {
+      .kpis {
+        grid-template-columns: 1fr
+      }
+
+      .charts {
+        grid-template-columns: 1fr
+      }
+    }
+
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px
+    }
+  </style>
+</head>
+
+<body class="bg-ai theme-sunset">
+  <div class="container">
+    <header>
+      <h1>📊 Recruitment Analysis</h1>
+      <div class="controls">
+        <form class="select-form" method="GET" action="/analysis_dashboard">
+          <label for="job" class="sr-only">Job</label>
+          <select id="job" name="job">
+            <option value="">All Jobs</option>
+            {% for jt in job_titles %}
+            <option value="{{ jt }}" {% if selected_job==jt %}selected{% endif %}>{{ jt }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit">View</button>
+        </form>
+        <a href="/hr_dashboard" class="card" style="text-decoration:none;color:inherit">← Back to HR Dashboard</a>
+      </div>
+    </header>
+
+    <div class="kpis">
+      <div class="card kpi">
+        <div class="label">Total Applicants</div>
+        <div class="num">{{ total_applicants }}</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Selected</div>
+        <div class="num">{{ selected_count }}</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Rejected</div>
+        <div class="num">{{ rejected_count }}</div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Selection vs Not Selected</h3>
+        <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="card">
+          <h4 style="margin:0 0 8px 0">Gender Breakdown</h4>
+          <div class="chart-wrap-sm"><canvas id="genderChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h4 style="margin:0 0 8px 0">Rank Distribution (1–10)</h4>
+          <div class="chart-wrap-sm"><canvas id="rankChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <small>Tip: filter by job to update charts. Data updated: {{ last_updated or '—' }}</small>
+    </footer>
+  </div>
+
+  <!-- ✅ Pass server data as JSON (no Jinja inside JS = no squiggles) -->
+  <script id="server-data" type="application/json">
+  {{ {
+    'selected_count': selected_count | default(0, true),
+    'rejected_count': rejected_count | default(0, true),
+    'gender_counts' : gender_counts  | default({}, true),
+    'rank_bins'     : rank_bins      | default([0,0,0,0,0,0,0,0,0,0], true)
+  } | tojson }}
+  </script>
+
+  <script>
+    // Read and sanitize server JSON
+    const jsonEl = document.getElementById('server-data');
+    let server = { selected_count: 0, rejected_count: 0, gender_counts: {}, rank_bins: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] };
+    try { server = JSON.parse(jsonEl.textContent) || server; } catch (_) { }
+
+    const selectedCount = Number(server.selected_count || 0);
+    const rejectedCount = Number(server.rejected_count || 0);
+    const genderCounts = server.gender_counts || {};
+    const rankBins = Array.isArray(server.rank_bins) ? server.rank_bins : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    // PIE
+    new Chart(document.getElementById('pieChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Selected', 'Rejected'],   // ← update this
+        datasets: [{
+          data: [selectedCount, rejectedCount],
+          backgroundColor: ['#ff9f43', '#ffd166'],
+          borderColor: '#fff',
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+    });
+
+    // GENDER
+    new Chart(document.getElementById('genderChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(genderCounts),
+        datasets: [{ label: 'Applicants', data: Object.values(genderCounts) }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+
+    // RANK
+    new Chart(document.getElementById('rankChart'), {
+      type: 'bar',
+      data: {
+        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+        datasets: [{ label: '# of Candidates', data: rankBins }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+  </script>
+</body>
+
+</html>

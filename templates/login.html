@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RecruitMate • Sign in</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+
+<body class="bg-ai theme-sunset">
+
+  <main class="auth-shell">
+
+    <!-- Left: Intro / Branding -->
+    <section class="intro">
+      <div class="brand">
+        <div class="logo">
+          <!-- Minimal AI chip mark -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="2" />
+            <path d="M8 8h8v8H8z" fill="currentColor" opacity="0.15" />
+            <circle cx="12" cy="12" r="2.2" fill="currentColor" />
+          </svg>
+        </div>
+        <h1 class="brand-name">Recruit<span>Mate</span></h1>
+      </div>
+
+      <h2 class="headline">AI-powered hiring, made simple.</h2>
+      <p class="subhead">
+        RecruitMate parses resumes, ranks candidates, and highlights skill gaps—so your team can move from screening
+        to selecting in minutes.
+      </p>
+
+      <ul class="bullets">
+        <li><span>⚡</span> Smart parsing & ranking with explainability</li>
+        <li><span>🎯</span> Job-to-candidate matching & skill-gap heatmaps</li>
+        <li><span>🔔</span> Real-time notifications to candidates & HR</li>
+        <li><span>📈</span> Analytics dashboard for outcomes & diversity</li>
+      </ul>
+
+      <div class="mini-cta">
+        New here?
+        <a href="{{ url_for('register') }}" class="link">Create an HR account</a>
+      </div>
+    </section>
+
+    <!-- Right: Auth card -->
+    <section class="auth-card" aria-labelledby="signin-title">
+      <div class="card glass">
+        <h2 id="signin-title">Sign in</h2>
+        <p class="muted">Welcome back! Please enter your details.</p>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="alerts" role="alert">
+          {% for category, msg in messages %}
+          <div class="alert {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}" class="form" novalidate>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@company.com" />
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input id="password" name="password" type="password" autocomplete="current-password" required
+                placeholder="••••••••" />
+              <button class="toggle" type="button" aria-label="Show password" title="Show password">Show</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <label class="checkbox">
+              <input type="checkbox" name="remember" />
+              <span>Remember me</span>
+            </label>
+            <!-- <a class="link small" href="#" onclick="alert('Ask admin to reset your password.'); return false;">Forgot
+              password?</a> -->
+          </div>
+
+          <button id="signinBtn" class="btn-primary" type="submit">
+            <span class="btn-text">Sign in</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+
+        <p class="fineprint">
+          By continuing you agree to our <a class="link" href="#">Terms</a> & <a class="link" href="#">Privacy</a>.
+        </p>
+      </div>
+
+      <p class="secondary-cta">
+        Don’t have an account? <a class="link" href="{{ url_for('register') }}">Register</a>
+      </p>
+    </section>
+  </main>
+
+  <script>
+    // Show/Hide password
+    const pw = document.getElementById('password');
+    const tgl = document.querySelector('.password-wrap .toggle');
+    tgl.addEventListener('click', () => {
+      const isPwd = pw.type === 'password';
+      pw.type = isPwd ? 'text' : 'password';
+      tgl.textContent = isPwd ? 'Hide' : 'Show';
+      tgl.setAttribute('aria-label', isPwd ? 'Hide password' : 'Show password');
+    });
+
+    // Loading state
+    const btn = document.getElementById('signinBtn');
+    document.querySelector('.form').addEventListener('submit', () => {
+      btn.classList.add('loading');
+      btn.disabled = true;
+    });
+  </script>
+</body>
+
+</html>

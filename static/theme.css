@@ -1,0 +1,33 @@
+/* static/theme.css  — background-only theming */
+:root{
+  /* Default palette (Sunset: orange → yellow) */
+  --bg1:#ff8c3b;
+  --bg2:#ffd166;
+}
+
+/* Optional palettes (switch by adding one of these classes to <body>) */
+.theme-aurora { --bg1:#6366f1; --bg2:#22d3ee; }   /* indigo → teal */
+.theme-mint   { --bg1:#10b981; --bg2:#34d399; }   /* green variants */
+.theme-slate  { --bg1:#0f172a; --bg2:#334155; }   /* dark slate */
+
+body.bg-ai{
+  min-height:100vh;
+  /* soft highlights + main gradient */
+  background:
+    radial-gradient(1100px 700px at 12% 8%, rgba(255,255,255,.40), transparent 60%),
+    radial-gradient(900px 600px at 88% 92%, rgba(255,255,255,.35), transparent 60%),
+    linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+  background-attachment: fixed; /* subtle parallax feel */
+}
+
+/* Gentle sheen, does not block clicks */
+body.bg-ai::before{
+  content:"";
+  position:fixed; inset:0; pointer-events:none;
+  background:linear-gradient(120deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+}
+
+/* Honor users who prefer less motion */
+@media (prefers-reduced-motion: reduce){
+  body.bg-ai::before{ display:none; }
+}

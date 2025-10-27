@@ -1,0 +1,9 @@
+flask
+Flask-JWT-Extended>=4.6
+flask-dance
+requests
+google-generativeai
+PyPDF2 
+python-docx
+Flask-SQLAlchemy>=3.1
+Werkzeug>=3.0

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Screening</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <style>
+    :root {
+      --accent: #14b8a6;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warn: #f97316;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: #111;
+      margin: 0;
+    }
+    header {
+      background: var(--card);
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h2 {
+      margin: 0;
+      color: var(--accent);
+    }
+    .btn-back {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      border: none;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+    .btn-back:hover {
+      background: #0d9488;
+    }
+    main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .card h3 {
+      margin-top: 0;
+      font-size: 18px;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(20,184,166,0.2);
+      outline: none;
+    }
+    input[type="submit"], button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-top: 14px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    input[type="submit"]:hover, button:hover {
+      background: #0d9488;
+    }
+    .flashes {
+      background: #ecfdf5;
+      border-left: 4px solid var(--accent);
+      padding: 10px;
+      border-radius: 6px;
+      list-style: none;
+      margin: 0 0 16px 0;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      background: #f3f4f6;
+      color: var(--muted);
+    }
+    .row-ok { background: #ecfdf5; }
+    .row-warn { background: #fff7ed; }
+    .row-bad { background: #fef2f2; }
+    .selected { color: var(--success); font-weight: 600; }
+    .rejected { color: var(--danger); font-weight: 600; }
+    .btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+    }
+    .btn.select { background: var(--success); color: #fff; }
+    .btn.reject { background: var(--danger); color: #fff; }
+    .btn.pending { background: #9ca3af; color: #fff; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    @media (max-width: 800px) {
+      table { font-size: 12px; }
+      th, td { padding: 6px; }
+      .actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body class="bg-ai theme-sunset">
+  <header>
+    <h2>🔍 Resume Screening</h2>
+    <a href="/hr_dashboard" class="btn-back">← Back to HR Dashboard</a>
+  </header>
+
+  <main>
+    {% with msgs = get_flashed_messages() %}
+    {% if msgs %}
+    <ul class="flashes">
+      {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Upload Resumes -->
+    <div class="card">
+      <h3>Upload Resumes</h3>
+      <form action="/upload_resumes" method="POST" enctype="multipart/form-data">
+        <label>Select Job:</label>
+        <select name="job_title" required>
+          {% for job in jobs %}
+          <option value="{{ job.title }}">{{ job.title }}</option>
+          {% endfor %}
+        </select>
+
+        <label style="margin-top:10px;">Upload Files:</label>
+        <input type="file" name="resumes" multiple required>
+
+        <input type="submit" value="Upload Resumes">
+      </form>
+      <small>{{ resumes_count }} resume(s) currently in queue.</small>
+      <p><small>Allowed: <code>.pdf</code>, <code>.docx</code>, <code>.txt</code></small></p>
+    </div>
+
+    <!-- Actions -->
+    <div class="card actions">
+      <form action="/preview_skills" method="POST">
+        <button type="submit">👀 Preview Extracted Skills</button>
+      </form>
+      <form action="/parse_resumes" method="POST">
+        <button type="submit">🧪 Start Screening (Score)</button>
+      </form>
+    </div>
+
+    <!-- Raw Skills Preview -->
+    {% if skills_preview is defined %}
+    <div class="card">
+      <h3>🧩 Raw Skills Preview</h3>
+      <table>
+        <tr>
+          <th>#</th>
+          <th>Resume File</th>
+          <th>Job</th>
+          <th>Extracted Skills</th>
+        </tr>
+        {% for item in skills_preview %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><a href="/uploads/resumes/{{ item.filename }}" download>{{ item.filename }}</a></td>
+          <td>{{ item.job_title }}</td>
+          <td>{% if item.skills %}{{ item.skills | join(', ') }}{% else %}<em>— not screened yet —</em>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      <p><small>(This preview shows the stored skills from your last screening run.)</small></p>
+    </div>
+    {% endif %}
+
+    <!-- Recent Results -->
+    {% if latest_results and latest_results|length > 0 %}
+    <div class="card">
+      <h3>Recent Results (Top 10)</h3>
+      <table>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Job</th>
+          <th>Resume</th>
+          <th>Score (%)</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+        {% for r in latest_results[:10] %}
+        {% set row_class = 'row-ok' if r.score >= 70 else ('row-warn' if r.score > 30 else 'row-bad') %}
+        <tr class="{{ row_class }}">
+          <td>{{ loop.index }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.job_title }}</td>
+          <td><a href="/uploads/resumes/{{ r.filename }}" download>{{ r.filename }}</a></td>
+          <td>{{ r.score }}</td>
+          <td><span class="{{ 'selected' if r.status == 'Selected' else ('rejected' if r.status == 'Rejected' else '') }}">{{ r.status }}</span></td>
+          <td style="white-space:nowrap">
+            <form action="/set_status" method="POST" style="display:inline">
+              <input type="hidden" name="filename" value="{{ r.filename }}">
+              <input type="hidden" name="status" value="Selected">
+              <button class="btn select" type="submit">Selected</button>
+            </form>
+            <form action="/set_status" method="POST" style="display:inline; margin-left:6px">
+              <input type="hidden" name="filename" value="{{ r.filename }}">
+              <input type="hidden" name="status" value="Rejected">
+              <button class="btn reject" type="submit">Rejected</button>
+            </form>
+            <form action="/set_status" method="POST" style="display:inline; margin-left:6px">
+              <input type="hidden" name="filename" value="{{ r.filename }}">
+              <input type="hidden" name="status" value="Pending">
+              <button class="btn pending" type="submit">Pending</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}
+  </main>
+</body>
+</html>

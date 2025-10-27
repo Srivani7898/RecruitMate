@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #fff;
+      --border: #e5e7eb;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: #111;
+    }
+
+    header {
+      background: var(--card);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header h2 i {
+      color: var(--accent);
+    }
+
+    header a {
+      text-decoration: none;
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+    }
+
+    .flashes {
+      margin: 0 0 12px;
+      padding: 10px;
+      border-left: 4px solid var(--success);
+      background: #ecfdf5;
+      color: var(--success);
+      border-radius: 6px;
+      list-style: none;
+    }
+
+    .section ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .job-item {
+      background: #f9fafb;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .job-item strong {
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    form label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    button {
+      margin-top: 14px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #1e4ed8;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-ai theme-sunset">
+  <header>
+    <h2><i class="fa-solid fa-user"></i> User Dashboard</h2>
+    <a href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </header>
+
+  <main>
+    <div>
+      <!-- Flash messages -->
+      {% with msgs = get_flashed_messages() %}
+      {% if msgs %}
+      <ul class="flashes">
+        {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      {% endwith %}
+
+      <!-- Recommended Jobs -->
+      <div class="card section">
+        <h3><i class="fa-solid fa-briefcase"></i> Recommended Jobs</h3>
+        {% if jobs %}
+        {% for job in jobs %}
+        <div class="job-item">
+          <strong>{{ job.title }}</strong> — ₹{{ job.salary }}<br>
+          <small style="color: var(--muted)">Last Date: {{ job.last_date }}</small><br>
+          <em>Req:</em> {{ job.requirements }}
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No jobs posted yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Recommended Jobs -->
+      <!-- <div class="card section">
+        <h3><i class="fa-solid fa-star"></i> Recommended For You</h3>
+        {% if recommended_jobs %}
+        {% for job in recommended_jobs %}
+        <div class="job-item">
+          <strong>{{ job.title }}</strong> — ₹{{ job.salary }}<br>
+          <small style="color: var(--muted)">Match Score: {{ job.match_score }}%</small><br>
+          <em>Req:</em> {{ job.requirements }}
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No recommendations yet. Complete your profile for better suggestions.</p>
+        {% endif %}
+      </div> -->
+
+      <!-- My Applications -->
+      <div class="card section">
+        <h3><i class="fa-solid fa-file-alt"></i> My Applications</h3>
+        {% if applications %}
+        <table>
+          <tr>
+            <th>#</th>
+            <th>Job</th>
+            <th>Resume</th>
+            <th>Status</th>
+          </tr>
+          {% for a in applications %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ a.job_title }}</td>
+            <td><a href="/uploads/resumes/{{ a.resume_file }}" download>{{ a.resume_file }}</a></td>
+            <td>{{ a.status or 'Pending' }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        {% else %}
+        <p>No applications yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Notifications -->
+      <div class="card section">
+        <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+        {% if notifications %}
+        <ul>
+          {% for note in notifications %}
+          <li>{{ note }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>No notifications.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Apply Form -->
+    <div>
+      <div class="card">
+        <h3><i class="fa-solid fa-paper-plane"></i> Apply to a Job</h3>
+        <form action="/apply_job" method="POST" enctype="multipart/form-data">
+          <label>Job</label>
+          <select id="job" name="job_title" required>
+            {% if jobs %}
+            {% for j in jobs %}
+            {% set t = (j.title if j.title is defined else j['title']) %}
+            <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+            {% else %}
+            <option value="" disabled selected>No jobs posted yet</option>
+            {% endif %}
+          </select>
+          <label>Full Name</label>
+          <input type="text" name="name" required>
+          <label>Mobile</label>
+          <input type="text" name="mobile" required>
+          <label>Gender</label>
+          <select name="gender" required>
+            <option value="">--select--</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+          <label>Education</label>
+          <input type="text" name="education" required>
+          <label>Address</label>
+          <input type="text" name="address" required>
+          <label>Resume (PDF/DOCX)</label>
+          <input type="file" name="resume" accept=".pdf,.docx" required>
+          <button type="submit"><i class="fa-solid fa-paper-plane"></i> Submit Application</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>
